@@ -2,6 +2,8 @@ import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
 
+import { getAuthErrorMessage } from "../utils/authError";
+
 export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,13 +19,12 @@ export default function Signup() {
       password,
     });
 
-    // ❌ 에러 먼저 처리
     if (error) {
-      setErrorMsg(error.message);
+      setErrorMsg(getAuthErrorMessage(error));
+      console.log(error.message);
       return;
     }
 
-    // 🔥 핵심 체크
     if (!data?.user?.identities || data.user.identities.length === 0) {
       setErrorMsg("이미 가입된 이메일입니다.");
       return;
@@ -34,22 +35,31 @@ export default function Signup() {
   };
 
   return (
-    <div>
-      <h1>회원가입</h1>
+    <div className="login_page">
+      <div className="login_card">
+        <h1>회원가입</h1>
 
-      <input placeholder="email" onChange={(e) => setEmail(e.target.value)} />
+        <input
+          placeholder="이메일을 입력하세요"
+          type="email"
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-      <input
-        placeholder="password"
-        type="password"
-        onChange={(e) => setPassword(e.target.value)}
-      />
+        <input
+          placeholder="비밀번호를 입력하세요"
+          type="password"
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-      {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+        {/* 에러 메시지 UI */}
+        {errorMsg && <p className="error-text">{errorMsg}</p>}
 
-      <button onClick={handleSignup}>회원가입</button>
+        <button onClick={handleSignup}>가입하기</button>
 
-      <button onClick={() => navigate("/")}>로그인</button>
+        <button className="signup_btn" onClick={() => navigate("/")}>
+          이미 계정이 있나요? 로그인
+        </button>
+      </div>
     </div>
   );
 }

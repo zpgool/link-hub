@@ -9,30 +9,28 @@ export default function BookmarkForm({ onAdd }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const formattedUrl = url.startsWith("http") ? url : `https://${url}`;
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) return;
 
-    const { data, error } = await supabase.from("bookmarks").insert([
+    const { error } = await supabase.from("bookmarks").insert([
       {
         title,
-        url,
+        url: formattedUrl, 
         description,
         user_id: user.id,
       },
     ]);
 
     if (error) {
+      alert("저장 실패: " + error.message);
       console.log(error);
     } else {
-      console.log("추가 성공:", data);
-
-      // 부모(Home) 새로고침용
       onAdd();
-
-      // 입력 초기화
       setTitle("");
       setUrl("");
       setDescription("");
@@ -44,12 +42,14 @@ export default function BookmarkForm({ onAdd }) {
       <h2>북마크 추가</h2>
 
       <input
+        required // 빈 값 방지
         placeholder="제목"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
 
       <input
+        required // 빈 값 방지
         placeholder="URL"
         value={url}
         onChange={(e) => setUrl(e.target.value)}
