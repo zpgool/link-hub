@@ -31,6 +31,37 @@ export default function Home() {
     fetchBookmarks();
   }, []);
 
+  const [editId, setEditId] = useState(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editUrl, setEditUrl] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+
+  const startEdit = (item) => {
+    setEditId(item.id);
+    setEditTitle(item.title);
+    setEditUrl(item.url);
+    setEditDescription(item.description);
+  };
+
+  const handleUpdate = async () => {
+    const { error } = await supabase
+      .from("bookmarks")
+      .update({
+        title: editTitle,
+        url: editUrl.startsWith("http") ? editUrl : `https://${editUrl}`,
+        description: editDescription,
+      })
+      .eq("id", editId);
+
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    setEditId(null);
+    fetchBookmarks();
+  };
+
   return (
     <div>
       <button onClick={handleLogout}>로그아웃</button>
@@ -48,8 +79,28 @@ export default function Home() {
             <a href={`https://${item.url}`} target="_blank" rel="noreferrer">
               링크
             </a>
+            <button onClick={() => startEdit(item)}>수정</button>
           </div>
         ))
+      )}
+      {editId && (
+        <div>
+          <h2>수정하기</h2>
+
+          <input
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+          />
+
+          <input value={editUrl} onChange={(e) => setEditUrl(e.target.value)} />
+
+          <input
+            value={editDescription}
+            onChange={(e) => setEditDescription(e.target.value)}
+          />
+
+          <button onClick={handleUpdate}>수정 완료</button>
+        </div>
       )}
     </div>
   );
