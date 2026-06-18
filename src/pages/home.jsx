@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import BookmarkForm from "../components/BookmarkForm";
 import { useNavigate } from "react-router-dom";
+import "../index.css"; // CSS 파일 import 경로를 맞춰주세요
 
 export default function Home() {
   const [bookmarks, setBookmarks] = useState([]);
-
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -63,54 +63,98 @@ export default function Home() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("삭제할까요?")) return;
+    if (!window.confirm("삭제할까요?")) return;
 
     await supabase.from("bookmarks").delete().eq("id", id);
-
     fetchBookmarks();
   };
+
   return (
-    <div>
-      <button onClick={handleLogout}>로그아웃</button>
+    <>
+      {/* HEADER */}
+      <div className="header_bar">
+        <h1>LinkHub</h1>
+        <button className="logout-btn" onClick={handleLogout}>
+          로그아웃
+        </button>
+      </div>
 
-      <h1>Home</h1>
-      <BookmarkForm onAdd={fetchBookmarks} />
+      <div className="main_box">
+        <div className="card_box">
+          <BookmarkForm onAdd={fetchBookmarks} />
+        </div>
 
-      {bookmarks.length === 0 ? (
-        <p>북마크 없음</p>
-      ) : (
-        bookmarks.map((item) => (
-          <div key={item.id}>
-            <h3>{item.title}</h3>
-            <p>{item.description}</p>
-            <a href={`https://${item.url}`} target="_blank" rel="noreferrer">
-              링크
-            </a>
-            <button onClick={() => startEdit(item)}>수정</button>
+        <div className="memo_box">
+          <ul id="message-list">
+            {bookmarks.length === 0 ? (
+              <p className="empty-msg">등록된 북마크가 없습니다.</p>
+            ) : (
+              bookmarks.map((item) => (
+                <li key={item.id}>
+                  <button
+                    className="delete-btn"
+                    title="삭제"
+                    onClick={() => handleDelete(item.id)}
+                  />
 
-            <button onClick={() => handleDelete(item.id)}>삭제</button>
-          </div>
-        ))
-      )}
+                  <div className="card_content">
+                    <div className="text_area">
+                      <strong>{item.title}</strong>
+                      <span>{item.description}</span>
+                    </div>
+
+                    <div className="action_area">
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="link-btn"
+                      >
+                        링크 이동
+                      </a>
+                      <button
+                        className="edit-btn"
+                        onClick={() => startEdit(item)}
+                      >
+                        수정
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              ))
+            )}
+          </ul>
+        </div>
+      </div>
+
       {editId && (
-        <div>
-          <h2>수정하기</h2>
+        <div className="modal-overlay" onClick={() => setEditId(null)}>
+          {/* 오버레이 클릭시 닫히지 않게 이벤트 버블링 방지 */}
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>북마크 수정</h2>
 
-          <input
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-          />
+            <input
+              placeholder="제목"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+            />
 
-          <input value={editUrl} onChange={(e) => setEditUrl(e.target.value)} />
+            <input
+              placeholder="URL 링크"
+              value={editUrl}
+              onChange={(e) => setEditUrl(e.target.value)}
+            />
 
-          <input
-            value={editDescription}
-            onChange={(e) => setEditDescription(e.target.value)}
-          />
+            <input
+              placeholder="설명"
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+            />
 
-          <button onClick={handleUpdate}>수정 완료</button>
+            <button onClick={handleUpdate}>수정 완료</button>
+          </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
