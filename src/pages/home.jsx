@@ -62,6 +62,13 @@ export default function Home() {
     fetchBookmarks();
   };
 
+  const handleDelete = async (id) => {
+    if (!confirm("삭제할까요?")) return;
+
+    await supabase.from("bookmarks").delete().eq("id", id);
+
+    fetchBookmarks();
+  };
   return (
     <div>
       <button onClick={handleLogout}>로그아웃</button>
@@ -80,6 +87,8 @@ export default function Home() {
               링크
             </a>
             <button onClick={() => startEdit(item)}>수정</button>
+
+            <button onClick={() => handleDelete(item.id)}>삭제</button>
           </div>
         ))
       )}
