@@ -25,10 +25,7 @@ export default function Login() {
     <div>
       <h1>로그인</h1>
 
-      <input
-        placeholder="email"
-        onChange={(e) => setEmail(e.target.value)}
-      />
+      <input placeholder="email" onChange={(e) => setEmail(e.target.value)} />
 
       <input
         placeholder="password"
@@ -37,6 +34,8 @@ export default function Login() {
       />
 
       <button onClick={handleLogin}>로그인</button>
+
+      <button onClick={() => navigate("/signup")}>회원가입</button>
     </div>
   );
 }

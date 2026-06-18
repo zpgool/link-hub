@@ -1,29 +1,30 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import BookmarkForm from "../components/BookmarkForm";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
   const [bookmarks, setBookmarks] = useState([]);
 
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
   const fetchBookmarks = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    console.log("session:", session);
-
-    const user = session?.user;
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData?.user;
 
     if (!user) return;
 
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("bookmarks")
       .select("*")
       .eq("user_id", user.id);
 
-    console.log("data:", data);
-
-    if (error) console.log(error);
-    else setBookmarks(data);
+    setBookmarks(data);
   };
 
   useEffect(() => {
@@ -32,7 +33,10 @@ export default function Home() {
 
   return (
     <div>
+      <button onClick={handleLogout}>로그아웃</button>
+
       <h1>Home</h1>
+      <BookmarkForm onAdd={fetchBookmarks} />
 
       {bookmarks.length === 0 ? (
         <p>북마크 없음</p>
@@ -41,7 +45,9 @@ export default function Home() {
           <div key={item.id}>
             <h3>{item.title}</h3>
             <p>{item.description}</p>
-            <a href={item.url} target="_blank">링크</a>
+            <a href={`https://${item.url}`} target="_blank" rel="noreferrer">
+              링크
+            </a>
           </div>
         ))
       )}
